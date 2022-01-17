@@ -39,6 +39,13 @@ A cloud system for pocketmine servers with proxy support.
 - /cloud **list** - Get a list of all running servers
 - /cloud **notify** - Activate/Deactivate the notify mode for yourself 
 
+## Installation
+
+- **Put** the CloudSystem.phar in a directory and start the cloud
+- **Download** the CloudBridge-PM and paste it in plugins/pmmp/
+- **Download** the CloudBridge-WD and paste it in plugins/wdpe/
+- **Now** you can start the cloud and create templates to start servers
+
 ## Downloads
 
 - **[CloudBridge-PM (PHAR)](https://github.com/PocketCloudSystem/CloudBridge-PM/releases/tag/1.0.0)**
