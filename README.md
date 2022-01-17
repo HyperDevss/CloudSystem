@@ -1,6 +1,6 @@
 # CloudSystem
 
-![PocketCloud](./github/images/logo.png)
+![PocketCloud](https://github.com/PocketCloudSystem/CloudSystem/blob/main/.github/images/logo.png)
 
 A cloud system for pocketmine servers with proxy support.
 
