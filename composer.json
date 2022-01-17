@@ -3,7 +3,6 @@
   "description": "A cloud system for pocketmine servers with proxy support.",
   "type": "project",
   "version": "1.0",
-  "license": "GPL-3.0",
   "require": {
     "php": "^8.0",
     "ext-json": "*",
