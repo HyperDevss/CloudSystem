@@ -2,7 +2,7 @@
 
 use Cloud\Cloud;
 
-require_once __DIR__ . "/Cloud.php";
+require 'vendor/autoload.php';
 
 if (is_phar()) {
     define("CLOUD_PATH", str_replace("phar://", "", dirname(__DIR__, 3) . DIRECTORY_SEPARATOR));
