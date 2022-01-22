@@ -34,6 +34,8 @@ class CheckServerStartupTask extends Task {
             ServerManager::getInstance()->removeServer($this->server);
             IdManager::getInstance()->removeId($this->server->getTemplate(), $this->server->getId());
             PortManager::getInstance()->removePort($this->server->getPort());
+            CloudSocket::getInstance()->unverify($this->server->getName());
+            ServerManager::getInstance()->removePid($this->server);
             Utils::deleteDir($this->server->getPath());
             $this->count = 10;
             TaskScheduler::getInstance()->cancel($this);

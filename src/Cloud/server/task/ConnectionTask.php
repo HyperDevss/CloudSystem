@@ -45,6 +45,7 @@ class ConnectionTask extends Task {
                     ServerManager::getInstance()->removeServer($this->server);
                     IdManager::getInstance()->removeId($this->server->getTemplate(), $this->server->getId());
                     PortManager::getInstance()->removePort($this->server->getPort());
+                    CloudSocket::getInstance()->unverify($this->server->getName());
 
                     $crashDumpFolderPath = $this->server->getPath() . "crashdumps/";
                     $time1 = date("D_M_j-H.i.s-T_Y", (microtime(true)-1));
@@ -64,6 +65,7 @@ class ConnectionTask extends Task {
                         NotifyAPI::getInstance()->sendNotify("The server §e" . $this->server->getName() . " §7was §cstopped§7!");
                     }
                     Utils::deleteDir($this->server->getPath());
+                    ServerManager::getInstance()->removePid($this->server);
                     TaskScheduler::getInstance()->cancel($this);
                 }
             }

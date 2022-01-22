@@ -156,7 +156,7 @@ class Cloud {
         $this->taskScheduler->cancelAll();
         $this->cloudConsole->shutdown();
         $this->socket->getUdpServer()->close();
-        $this->serverManager->stopAll();
+        $this->serverManager->stopAll(true);
         $this->logger->close();
         @Utils::kill(getmypid());
         exit(1);

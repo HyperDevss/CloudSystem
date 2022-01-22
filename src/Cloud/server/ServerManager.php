@@ -80,12 +80,24 @@ class ServerManager {
         else $this->closeProcess($server);
     }
 
+    public function forceStopServer(Server $server) {
+        CloudLogger::getInstance()->info("The server §e" . $server->getName() . " §ris §cstopping§r...");
+        NotifyAPI::getInstance()->sendNotify("The server §e" . $server->getName() . " §7is §cstopping§7...");
+        $server->setServerStatus(ServerStatus::STATUS_STOPPING);
+
+        $pid = $this->getPid($server);
+        if ($pid !== null) Utils::kill($pid);
+    }
+
     public function stopTemplate(Template $template) {
         foreach ($this->getServersOfTemplate($template) as $server) $this->stopServer($server);
     }
 
-    public function stopAll() {
-        foreach ($this->servers as $server) $this->stopServer($server);
+    public function stopAll(bool $force = false) {
+        foreach ($this->servers as $server) {
+            if (!$force) $this->stopServer($server);
+            else $this->forceStopServer($server);
+        }
     }
 
     public function saveServer(Server $server) {
@@ -128,6 +140,15 @@ class ServerManager {
                 }
             }
         }
+    }
+
+    public function removePid(Server $server) {
+        if (file_exists($server->getPath() . "pid.txt")) unlink($server->getPath() . "pid.txt");
+    }
+
+    public function getPid(Server $server): ?string {
+        if (file_exists($server->getPath() . "pid.txt")) intval(file_get_contents($server->getPath() . "pid.txt"));
+        return null;
     }
 
     public function dispatchCommand(Server $server, string $commandLine) {
@@ -190,10 +211,11 @@ class ServerManager {
     }
 
     public function closeProcess(Server $server) {
-        if (Cloud::getInstance()->getStartMethod() == Cloud::METHOD_TMUX) {
-//            passthru("tmux send -t " . $server->getName() . " '^C' ENTER && tmux kill-session -t " . $server->getName());
-        } else if (Cloud::getInstance()->getStartMethod() == Cloud::METHOD_SCREEN) {
-//            passthru("screen -S " . $server->getName() . " -X stuff '^C\n' && screen -S " . $server->getName() . " -X quit");
+        if (Cloud::getInstance()->getStartMethod() == Cloud::METHOD_TMUX || Cloud::getInstance()->getStartMethod() == Cloud::METHOD_SCREEN) {
+            $pid = $this->getPid($server);
+            if ($pid !== null) {
+                Utils::kill($pid, true);
+            }
         } else if (Cloud::getInstance()->getStartMethod() == Cloud::METHOD_PROCESS) {
             $process = $this->getProcess($server);
             if ($process !== null) {
