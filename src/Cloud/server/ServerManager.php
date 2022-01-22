@@ -48,13 +48,14 @@ class ServerManager {
                     if ($port !== 0) {
                         $server = new Server($template->getName() . "-" . $id, $id, $port, $template, microtime(true));
                         if (!file_exists($server->getPath())) mkdir($server->getPath());
-                        $server->createProperties();
                         Utils::copyDir($template->getPath(), $server->getPath());
                         if ($template->getType() == $template::TYPE_SERVER) {
                             Utils::copyDir(CLOUD_PATH . "local/plugins/pmmp/", $server->getPath() . "plugins/");
                         } else {
                             Utils::copyDir(CLOUD_PATH . "local/plugins/wdpe/", $server->getPath() . "plugins/");
                         }
+
+                        $server->createProperties();
 
                         $this->addServer($server);
                         $this->getIdManager()->addId($template, $id);

@@ -107,7 +107,6 @@ class Server {
         }
 
         $cfg = $this->properties;
-        $cfg->reload();
         if ($this->template->getType() == Template::TYPE_SERVER) {
             foreach ($cfg->getAll() as $key => $value) {
                 $cfg->set($key, $value);
