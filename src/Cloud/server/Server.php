@@ -126,7 +126,7 @@ class Server {
             foreach ($cfg->getAll() as $key => $value) {
                 $cfg->set($key, $value);
             }
-            $cfg->set("listener", ["motd" => str_replace("{server}", $this->getName(), Cloud::getInstance()->getProxyMotd()), "priorities" => [], "host" => "0.0.0.0:" . $this->getPort(), "max-players" => $this->getTemplate()->getMaxPlayers()]);
+            $cfg->set("listener", ["motd" => str_replace("{server}", $this->getName(), Cloud::getInstance()->getProxyMotd()), "priorities" => [], "host" => "0.0.0.0:" . $this->getPort(), "max_players" => $this->getTemplate()->getMaxPlayers()]);
             $cfg->set("use_login_extras", false);
             $cfg->set("cloud-path", CLOUD_PATH);
             $cfg->set("cloud-port", Cloud::getInstance()->getSocketPort());
