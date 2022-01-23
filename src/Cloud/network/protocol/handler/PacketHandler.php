@@ -45,6 +45,7 @@ class PacketHandler {
             CloudLogger::getInstance()->info("The server §e" . $checkServer->getName() . " §rwas §averified§r!");
             CloudSocket::getInstance()->sendPacket(LoginResponsePacket::create(LoginResponsePacket::SUCCESS), $client);
         } else {
+            CloudLogger::getInstance()->warning("Received a login request from a not existing server! §8(§e" . $packet->server . "§8)");
             CloudSocket::getInstance()->sendPacket(LoginResponsePacket::create(LoginResponsePacket::DENIED), $client);
         }
     }
