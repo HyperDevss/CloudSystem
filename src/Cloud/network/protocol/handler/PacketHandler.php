@@ -162,9 +162,9 @@ class PacketHandler {
         if (($server = ServerManager::getInstance()->getServer($packet->server)) !== null) {
             $players = [];
             foreach ($server->getPlayers() as $player) $players[] = $player->getName();
-            CloudSocket::getInstance()->sendPacket(ServerInfoResponsePacket::create($server->getName(), $server->getId(), $players, $server->getTemplate()->getMaxPlayers(), $server->getServerStatus(), $packet->player, ServerInfoResponsePacket::SUCCESS), $client);
+            CloudSocket::getInstance()->sendPacket(ServerInfoResponsePacket::create($server->getName(), $server->getId(), $server->getTemplate()->getName(), $server->getPort(), $players, $server->getTemplate()->getMaxPlayers(), $server->getServerStatus(), $packet->player, ServerInfoResponsePacket::SUCCESS), $client);
         } else {
-            CloudSocket::getInstance()->sendPacket(ServerInfoResponsePacket::create($packet->server, 0, [], 0, -1, $packet->player, ServerInfoResponsePacket::ERROR), $client);
+            CloudSocket::getInstance()->sendPacket(ServerInfoResponsePacket::create($packet->server, 0, "", 0, [], 0, -1, $packet->player, ServerInfoResponsePacket::ERROR), $client);
         }
     }
 

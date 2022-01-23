@@ -47,10 +47,12 @@ class ServerInfoResponsePacket extends Packet {
         return self::ID_SERVER_INFO_RESPONSE;
     }
 
-    public static function create(string $name, int $id, array $players, int $maxPlayers, int $serverStatus, string $player, int $code): self {
+    public static function create(string $name, int $id, string $template, int $port, array $players, int $maxPlayers, int $serverStatus, string $player, int $code): self {
         $pk = new self;
         $pk->name = $name;
         $pk->id = $id;
+        $pk->template = $template;
+        $pk->port = $port;
         $pk->players = $players;
         $pk->maxPlayers = $maxPlayers;
         $pk->serverStatus = $serverStatus;
