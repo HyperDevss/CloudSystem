@@ -12,7 +12,7 @@ class Utils {
     const PLUGIN_JOINHANDLER_WD = 2;
 
     private static array $versions = [
-        0 => ["Name" => "PocketMine-MP", "Aliases" => ["pm", "pmmp"], "Url" => "https://github.com/pmmp/PocketMine-MP/releases/latest/download/PocketMine-MP.phar"],
+        0 => ["Name" => "PocketMine-MP", "Aliases" => ["pm", "pmmp"], "Url" => "https://github.com/pmmp/PocketMine-MP/releases/download/4.0.7/PocketMine-MP.phar"],
         1 => ["Name" => "WaterdogPE", "Aliases" => ["proxy", "wdpe", "wd"], "Url" => "https://jenkins.waterdog.dev/job/Waterdog/job/WaterdogPE/job/master/lastSuccessfulBuild/artifact/target/Waterdog.jar"]
     ];
 
