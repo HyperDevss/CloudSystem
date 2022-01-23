@@ -18,22 +18,13 @@ class ListCommand extends Command {
                 $this->sendTemplates();
             } else if (strtolower($args[0]) == "servers") {
                 $this->sendServers();
-
             } else if (strtolower($args[0]) == "players") {
                 $this->sendPlayers();
             } else {
-                $this->sendTemplates();
-                CloudLogger::getInstance()->info(" ");
-                $this->sendServers();
-                CloudLogger::getInstance()->info(" ");
-                $this->sendPlayers();
+                CloudLogger::getInstance()->info("§c" . $this->getUsage());
             }
         } else {
-            $this->sendTemplates();
-            CloudLogger::getInstance()->info(" ");
             $this->sendServers();
-            CloudLogger::getInstance()->info(" ");
-            $this->sendPlayers();
         }
         return true;
     }

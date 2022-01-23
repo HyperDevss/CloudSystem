@@ -13,6 +13,8 @@ use Cloud\network\protocol\packet\LoginResponsePacket;
 use Cloud\network\protocol\packet\LogPacket;
 use Cloud\network\protocol\packet\NotifyStatusUpdatePacket;
 use Cloud\network\protocol\packet\Packet;
+use Cloud\network\protocol\packet\PlayerInfoRequestPacket;
+use Cloud\network\protocol\packet\PlayerInfoResponsePacket;
 use Cloud\network\protocol\packet\PlayerJoinPacket;
 use Cloud\network\protocol\packet\PlayerKickPacket;
 use Cloud\network\protocol\packet\PlayerQuitPacket;
@@ -21,6 +23,8 @@ use Cloud\network\protocol\packet\ProxyPlayerQuitPacket;
 use Cloud\network\protocol\packet\RegisterServerPacket;
 use Cloud\network\protocol\packet\SaveServerPacket;
 use Cloud\network\protocol\packet\SendNotifyPacket;
+use Cloud\network\protocol\packet\ServerInfoRequestPacket;
+use Cloud\network\protocol\packet\ServerInfoResponsePacket;
 use Cloud\network\protocol\packet\StartServerRequestPacket;
 use Cloud\network\protocol\packet\StartServerResponsePacket;
 use Cloud\network\protocol\packet\StopServerRequestPacket;
@@ -59,7 +63,11 @@ class PacketPool {
             new StopServerRequestPacket(),
             new StopServerResponsePacket(),
             new ListServersRequestPacket(),
-            new ListServersResponsePacket()
+            new ListServersResponsePacket(),
+            new ServerInfoRequestPacket(),
+            new ServerInfoResponsePacket(),
+            new PlayerInfoRequestPacket(),
+            new PlayerInfoResponsePacket()
         );
     }
 

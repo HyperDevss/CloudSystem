@@ -32,7 +32,7 @@ class CommandManager {
         $this->registerCommand(new StopCommand("stop", "Stop a server", "stop <template|server|all>", []));
         $this->registerCommand(new DispatchCommand("dispatch", "Send a command to a server", "dispatch <server> <command>", ["execute"]));
         $this->registerCommand(new SaveCommand("save", "Save a server", "save <server>", []));
-        $this->registerCommand(new ListCommand("list", "List of all templates and servers", "list", []));
+        $this->registerCommand(new ListCommand("list", "List of all templates and servers", "list [servers|templated|players]", []));
         $this->registerCommand(new KickCommand("kick", "Kick a player", "kick <player> [reason]", []));
         $this->registerCommand(new SendCommand("send", "Send a message to a player", "send <player> <message|title|popup|tip|actionbar> <message>", ["sendmsg"]));
     }

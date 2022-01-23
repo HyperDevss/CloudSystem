@@ -94,6 +94,25 @@ class Cloud {
             CloudLogger::getInstance()->info("§aSuccessfully §rdownloaded the server version §b" . Utils::getVersionInfo(Utils::VERSION_WATERDOGPE)["Name"] . "§r!");
         }
 
+        CloudLogger::getInstance()->info("Check the plugins...");
+        if (!Utils::hasPluginDownloaded(Utils::PLUGIN_CLOUDBRIDGE_PM)) {
+            CloudLogger::getInstance()->info("Download the plugin §b" . Utils::getPluginInfo(Utils::PLUGIN_CLOUDBRIDGE_PM)["Name"] . "§r...");
+            Utils::downloadPlugin(Utils::PLUGIN_CLOUDBRIDGE_PM);
+            CloudLogger::getInstance()->info("§aSuccessfully §rdownloaded the plugin §b" . Utils::getPluginInfo(Utils::PLUGIN_CLOUDBRIDGE_PM)["Name"] . "§r!");
+        }
+
+        if (!Utils::hasPluginDownloaded(Utils::PLUGIN_CLOUDBRIDGE_WD)) {
+            CloudLogger::getInstance()->info("Download the plugin §b" . Utils::getPluginInfo(Utils::PLUGIN_CLOUDBRIDGE_WD)["Name"] . "§r...");
+            Utils::downloadPlugin(Utils::PLUGIN_CLOUDBRIDGE_WD);
+            CloudLogger::getInstance()->info("§aSuccessfully §rdownloaded the plugin §b" . Utils::getPluginInfo(Utils::PLUGIN_CLOUDBRIDGE_WD)["Name"] . "§r!");
+        }
+
+        if (!Utils::hasPluginDownloaded(Utils::PLUGIN_JOINHANDLER_WD)) {
+            CloudLogger::getInstance()->info("Download the plugin §b" . Utils::getPluginInfo(Utils::PLUGIN_JOINHANDLER_WD)["Name"] . "§r...");
+            Utils::downloadPlugin(Utils::PLUGIN_JOINHANDLER_WD);
+            CloudLogger::getInstance()->info("§aSuccessfully §rdownloaded the plugin §b" . Utils::getPluginInfo(Utils::PLUGIN_JOINHANDLER_WD)["Name"] . "§r!");
+        }
+
         if (!$this->cloudConfig->exists("cloud-port")) $this->cloudConfig->set("cloud-port", mt_rand(600, 56486));
         if (!$this->cloudConfig->exists("debug-mode")) $this->cloudConfig->set("debug-mode", false);
         if (!$this->cloudConfig->exists("proxy-motd")) $this->cloudConfig->set("proxy-motd", "§c{server}");

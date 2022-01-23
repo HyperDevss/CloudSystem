@@ -6,9 +6,20 @@ class Utils {
 
     const VERSION_POCKETMINE = 0;
     const VERSION_WATERDOGPE = 1;
+
+    const PLUGIN_CLOUDBRIDGE_PM = 0;
+    const PLUGIN_CLOUDBRIDGE_WD = 1;
+    const PLUGIN_JOINHANDLER_WD = 2;
+
     private static array $versions = [
-        0 => ["Name" => "PocketMine-MP", "Aliases" => ["pm", "pmmp"], "Url" => "https://github.com/pmmp/PocketMine-MP/releases/download/4.0.7/PocketMine-MP.phar"],
+        0 => ["Name" => "PocketMine-MP", "Aliases" => ["pm", "pmmp"], "Url" => "https://github.com/pmmp/PocketMine-MP/releases/latest/download/PocketMine-MP.phar"],
         1 => ["Name" => "WaterdogPE", "Aliases" => ["proxy", "wdpe", "wd"], "Url" => "https://jenkins.waterdog.dev/job/Waterdog/job/WaterdogPE/job/master/lastSuccessfulBuild/artifact/target/Waterdog.jar"]
+    ];
+
+    private static array $plugins = [
+        0 => ["Name" => "CloudBridge-PM", "Aliases" => ["cb-pm"], "Version" => self::VERSION_POCKETMINE, "Url" => "https://github.com/PocketCloudSystem/CloudBridge-PM/releases/latest/download/CloudBridge-PM.phar"],
+        1 => ["Name" => "CloudBridge-WD", "Aliases" => ["cb-wd"], "Version" => self::VERSION_WATERDOGPE, "Url" => "https://github.com/PocketCloudSystem/CloudBridge-WD/releases/latest/download/CloudBridge-WD-1.0-SNAPSHOT.jar"],
+        2 => ["Name" => "JoinHandler", "Aliases" => ["jh", "jh-wd"], "Version" => self::VERSION_WATERDOGPE, "Url" => "https://github.com/PocketCloudSystem/JoinHandler/releases/latest/download/JoinHandler-1.0-SNAPSHOT.jar"]
     ];
 
     public static function downloadVersion(int $version) {
@@ -36,8 +47,50 @@ class Utils {
         return false;
     }
 
+    public static function downloadPlugin(int $plugin) {
+        if (isset(self::$plugins[$plugin])) {
+            $url = self::$plugins[$plugin]["Url"];
+            $version = self::$plugins[$plugin]["Version"];
+            $path = "";
+            if ($version == self::VERSION_POCKETMINE) {
+                $path = CLOUD_PATH . "local/plugins/pmmp/";
+            } else if ($version == self::VERSION_WATERDOGPE) {
+                $path = CLOUD_PATH . "local/plugins/wdpe/";
+            }
+            file_put_contents($path . basename($url), file_get_contents($url, false, stream_context_create(["ssl" => ["verify_peer" => false, "verify_peer_name" => false]])));
+        }
+    }
+
+    public static function hasPluginDownloaded(int $plugin): bool {
+        if (isset(self::$plugins[$plugin])) {
+            $baseName = basename(self::$plugins[$plugin]["Url"]);
+            $version = self::$plugins[$plugin]["Version"];
+            if ($version == self::VERSION_POCKETMINE) {
+                if (file_exists(CLOUD_PATH . "local/plugins/pmmp/" . $baseName)) return true;
+            } else if ($version == self::VERSION_WATERDOGPE) {
+                if (file_exists(CLOUD_PATH . "local/plugins/wdpe/" . $baseName)) return true;
+            }
+        }
+        return false;
+    }
+
+    public static function getPlugins(): array {
+        return self::$plugins;
+    }
+
     public static function getVersions(): array {
         return self::$versions;
+    }
+
+    public static function getPluginInfo(int $plugin): array {
+        $info = [];
+        if (isset(self::$plugins[$plugin])) {
+            $info["Name"] = self::$plugins[$plugin]["Name"];
+            $info["Aliases"] = self::$plugins[$plugin]["Aliases"];
+            $info["Url"] = self::$plugins[$plugin]["Url"];
+            $info["Version"] = self::$plugins[$plugin]["Version"];
+        }
+        return $info;
     }
 
     public static function getVersionInfo(int $version): array {

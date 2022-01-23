@@ -28,4 +28,8 @@ class ProtocolInfo {
     const ID_STOP_SERVER_RESPONSE = 20;
     const ID_LIST_SERVERS_REQUEST = 21;
     const ID_LIST_SERVERS_RESPONSE = 22;
+    const ID_SERVER_INFO_REQUEST = 23;
+    const ID_SERVER_INFO_RESPONSE = 24;
+    const ID_PLAYER_INFO_REQUEST = 25;
+    const ID_PLAYER_INFO_RESPONSE = 26;
 }

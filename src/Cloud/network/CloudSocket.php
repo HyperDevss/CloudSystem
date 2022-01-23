@@ -2,47 +2,44 @@
 
 namespace Cloud\network;
 
-use Cloud\api\NotifyAPI;
 use Cloud\Cloud;
-use Cloud\lib\snooze\SleeperNotifier;
+use Cloud\network\protocol\handler\PacketHandler;
 use Cloud\network\protocol\packet\ConnectionPacket;
 use Cloud\network\protocol\packet\DispatchCommandPacket;
 use Cloud\network\protocol\packet\InvalidPacket;
 use Cloud\network\protocol\packet\ListServersRequestPacket;
 use Cloud\network\protocol\packet\ListServersResponsePacket;
 use Cloud\network\protocol\packet\LoginRequestPacket;
-use Cloud\network\protocol\packet\LoginResponsePacket;
+use Cloud\network\protocol\packet\LogPacket;
 use Cloud\network\protocol\packet\NotifyStatusUpdatePacket;
 use Cloud\network\protocol\packet\Packet;
+use Cloud\network\protocol\packet\PlayerInfoRequestPacket;
 use Cloud\network\protocol\packet\PlayerJoinPacket;
 use Cloud\network\protocol\packet\PlayerKickPacket;
 use Cloud\network\protocol\packet\PlayerQuitPacket;
 use Cloud\network\protocol\packet\ProxyPlayerJoinPacket;
 use Cloud\network\protocol\packet\ProxyPlayerQuitPacket;
 use Cloud\network\protocol\packet\SaveServerPacket;
+use Cloud\network\protocol\packet\ServerInfoRequestPacket;
+use Cloud\network\protocol\packet\ServerInfoResponsePacket;
 use Cloud\network\protocol\packet\StartServerRequestPacket;
 use Cloud\network\protocol\packet\StartServerResponsePacket;
 use Cloud\network\protocol\packet\StopServerRequestPacket;
 use Cloud\network\protocol\packet\StopServerResponsePacket;
-use Cloud\network\protocol\packet\TestPacket;
 use Cloud\network\protocol\packet\TextPacket;
 use Cloud\network\protocol\PacketPool;
 use Cloud\network\udp\UDPClient;
 use Cloud\network\udp\UDPServer;
 use Cloud\network\utils\Address;
-use Cloud\player\CloudPlayer;
-use Cloud\player\PlayerManager;
 use Cloud\scheduler\ClosureTask;
 use Cloud\server\Server;
 use Cloud\server\ServerManager;
 use Cloud\server\status\ServerStatus;
 use Cloud\template\Template;
 use Cloud\template\TemplateManager;
-use Cloud\thread\Thread;
 use Cloud\utils\CloudLogger;
-use CloudBridge\network\protocol\packet\LogPacket;
 
-class CloudSocket {
+class CloudSocket extends PacketHandler {
 
     private static self $instance;
     private UDPServer $udpServer;
@@ -79,96 +76,41 @@ class CloudSocket {
 
                         if (!$this->isVerified($client)) {
                             if ($packet instanceof LoginRequestPacket) {
-                                if (($checkServer = ServerManager::getInstance()->getServer($packet->server)) !== null) {
-                                    $this->verify($client, $checkServer->getName());
-                                    CloudLogger::getInstance()->info("The server §e" . $checkServer->getName() . " §rwas §averified§r!");
-                                    $this->sendPacket(LoginResponsePacket::create(LoginResponsePacket::SUCCESS), $client);
-                                } else {
-                                    CloudLogger::getInstance()->warning("Received a login request from a not existing server! §8(§e" . $packet->server . "§8)");
-                                    $this->sendPacket(LoginResponsePacket::create(LoginResponsePacket::DENIED), $client);
-                                }
+                                $this->handleLogin($packet, $client);
                             }
                         } else {
                             if ($packet instanceof ConnectionPacket) {
-                                if (($server = ServerManager::getInstance()->getServer($packet->server)) !== null) {
-                                    $server->setGotConnectionResponse(true);
-                                }
+                                $this->handleConnection($packet, $client);
                             } else if ($packet instanceof DispatchCommandPacket) {
-                                if (($server = ServerManager::getInstance()->getServer($packet->server)) !== null) {
-                                    ServerManager::getInstance()->dispatchCommand($server, $packet->commandLine);
-                                }
+                                $this->handleDispatchCommand($packet, $client);
                             } else if ($packet instanceof SaveServerPacket) {
-                                if (($server = ServerManager::getInstance()->getServer($packet->server)) !== null) {
-                                    ServerManager::getInstance()->saveServer($server);
-                                }
+                                $this->handleSaveServer($packet, $client);
                             } else if ($packet instanceof NotifyStatusUpdatePacket) {
-                                NotifyAPI::getInstance()->setNotify($packet->player, $packet->v);
+                                $this->handleNotifyStatusUpdate($packet, $client);
                             } else if ($packet instanceof PlayerJoinPacket) {
-                                if (($player = PlayerManager::getInstance()->getPlayer($packet->name)) !== null) {
-                                    if ($player->getCurrentServer() == "") $player->setCurrentServer($packet->currentServer);
-                                    PlayerManager::getInstance()->addServerPlayer($player);
-                                } else {
-                                    $player = new CloudPlayer($packet->name, new Address($packet->address, $packet->port), $packet->uuid, $packet->xuid, $packet->currentServer, (PlayerManager::getInstance()->hasLastProxy($packet->name) ? PlayerManager::getInstance()->getLastProxy($packet->name) : ""));
-                                    PlayerManager::getInstance()->handleLogin($player);
-                                    PlayerManager::getInstance()->addServerPlayer($player);
-                                    if ($player->getCurrentProxy() !== "") PlayerManager::getInstance()->addProxyPlayer($player);
-                                }
+                                $this->handleJoin($packet, $client);
                             } else if ($packet instanceof PlayerQuitPacket) {
-                                if (($player = PlayerManager::getInstance()->getPlayer($packet->name)) !== null) {
-                                    PlayerManager::getInstance()->handleLogout($player);
-                                    PlayerManager::getInstance()->removeServerPlayer($player);
-                                    $player->setCurrentServer("");
-                                }
+                                $this->handleQuit($packet, $client);
                             } else if ($packet instanceof ProxyPlayerJoinPacket) {
-                                $player = new CloudPlayer($packet->name, new Address($packet->address, $packet->port), $packet->uuid, $packet->xuid, "", $packet->currentProxy);
-                                PlayerManager::getInstance()->handleLogin($player);
-                                PlayerManager::getInstance()->addProxyPlayer($player);
+                                $this->handleProxyJoin($packet, $client);
                             } else if ($packet instanceof ProxyPlayerQuitPacket) {
-                                if (($player = PlayerManager::getInstance()->getPlayer($packet->name)) !== null) {
-                                    PlayerManager::getInstance()->handleLogout($player);
-                                    PlayerManager::getInstance()->removeLastProxy($player);
-                                    PlayerManager::getInstance()->removeProxyPlayer($player);
-                                    $player->setCurrentProxy("");
-                                }
+                                $this->handleProxyQuit($packet, $client);
                             } else if ($packet instanceof LogPacket) {
-                                $serverName = $this->getServer($client);
-                                if ($serverName !== null) CloudLogger::getInstance()->message("§e" . $serverName . ": §r" . $packet->message);
+                                $this->handleLog($packet, $client);
                             } else if ($packet instanceof TextPacket) {
-                                $this->broadcastPacket($packet);
+                                $this->handleText($packet, $client);
                             } else if ($packet instanceof PlayerKickPacket) {
-                                $this->broadcastPacket($packet);
+                                $this->handlePlayerKick($packet, $client);
                             } else if ($packet instanceof StartServerRequestPacket) {
-                                if (($template = TemplateManager::getInstance()->getTemplate($packet->template)) !== null) {
-                                    if (count(ServerManager::getInstance()->getServersOfTemplate($template)) >= $template->getMaxServers()) {
-                                        $message = "§cNo servers from the template §e" . $template->getName() . " §ccan be started anymore because the limit was reached!";
-                                        $this->sendPacket(StartServerResponsePacket::create($packet->player, $message, StartServerResponsePacket::ERROR), $client);
-                                    } else {
-                                        $this->sendPacket(StartServerResponsePacket::create($packet->player, "", StartServerResponsePacket::SUCCESS), $client);
-                                        ServerManager::getInstance()->startServer($template, $packet->count);
-                                    }
-                                } else {
-                                    $message = "§cThe template §e" . $packet->template . " §cdoesn't exists!";
-                                    $this->sendPacket(StartServerResponsePacket::create($packet->player, $message, StartServerResponsePacket::ERROR), $client);
-                                }
+                                $this->handleStartServer($packet, $client);
                             } else if ($packet instanceof StopServerRequestPacket) {
-                                if ($packet->server == "all" || $packet->server == "*") {
-                                    $this->sendPacket(StopServerResponsePacket::create($packet->player, "", StopServerResponsePacket::SUCCESS), $client);
-                                } else {
-                                    if (($template = TemplateManager::getInstance()->getTemplate($packet->server)) !== null) {
-                                        $this->sendPacket(StopServerResponsePacket::create($packet->player, "", StopServerResponsePacket::SUCCESS), $client);
-                                        ServerManager::getInstance()->stopTemplate($template);
-                                    } else if (($server = ServerManager::getInstance()->getServer($packet->server)) !== null) {
-                                        $this->sendPacket(StopServerResponsePacket::create($packet->player, "", StopServerResponsePacket::SUCCESS), $client);
-                                        ServerManager::getInstance()->stopServer($server);
-                                    } else {
-                                        $message = "§cThe server §e" . $packet->server . " §cdoesn't exists!";
-                                        $this->sendPacket(StopServerResponsePacket::create($packet->player, $message, StopServerResponsePacket::ERROR), $client);
-                                    }
-                                }
+                                $this->handleStopServer($packet, $client);
                             } else if ($packet instanceof ListServersRequestPacket) {
-                                $servers = [];
-                                foreach (ServerManager::getInstance()->getServers() as $server) $servers[$server->getName()] = ["Port" => $server->getPort(), "Players" => $server->getPlayersCount(), "MaxPlayers" => $server->getTemplate()->getMaxPlayers(), "Template" => ($server->getTemplate()->getType() == Template::TYPE_SERVER ? "§e" . $server->getTemplate()->getName() : "§c" . $server->getTemplate()->getName()), "ServerStatus" => $this->statusString($server->getServerStatus())];
-                                $this->sendPacket(ListServersResponsePacket::create($packet->player, $servers), $client);
+                                $this->handleListServers($packet, $client);
+                            } else if ($packet instanceof ServerInfoRequestPacket) {
+                                $this->handleServerInfo($packet, $client);
+                            } else if ($packet instanceof PlayerInfoRequestPacket) {
+                                $this->handlePlayerInfo($packet, $client);
                             }
                         }
                     }
@@ -177,14 +119,6 @@ class CloudSocket {
                 }
             }
         }
-    }
-
-    private function statusString(int $status): string {
-        if ($status == ServerStatus::STATUS_STARTING) return "§2STARTING";
-        else if ($status == ServerStatus::STATUS_STARTED) return "§aSTARTED";
-        else if ($status == ServerStatus::STATUS_STOPPING) return "§4STOPPING";
-        else if ($status == ServerStatus::STATUS_STOPPED) return "§cSTOPPED";
-        return "";
     }
 
     public function isVerified(UDPClient $client): bool {

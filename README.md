@@ -36,6 +36,8 @@ A cloud system for pocketmine servers with proxy support.
 
 - /cloud **start** [template] [count: 1] - Start a server
 - /cloud **stop** [server|template|all] - Stop a server/template
+- /cloud **serverinfo** [server] - See information about a server
+- /cloud **playerinfo** [player] - See information about a player
 - /cloud **list** - Get a list of all running servers
 - /cloud **notify** - Activate/Deactivate the notify mode for yourself 
 
