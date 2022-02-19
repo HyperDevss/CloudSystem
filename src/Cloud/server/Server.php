@@ -92,7 +92,12 @@ class Server {
     }
 
     public function removePlayer(CloudPlayer $player) {
-        if (isset($this->players[$player->getName()])) unset($this->players[$player->getName()]);
+        $players = $this->players;
+        if (array_key_exists($player->getName(), $players)) {
+            unset($players[$player->getName()]);
+            $this->players = $players;
+            array_push($this->players);
+        }
     }
 
     public function getPath(): string {
